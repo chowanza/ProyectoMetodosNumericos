@@ -90,8 +90,7 @@ void showItem(const char* text, int posx,int posy,bool select) {
 void GaussSeidel(){
 	
 	int n;
-	cout << endl;
-    cout << "Ingrese el tamano del sistema: ";
+    cout << "Ingrese el tamanio del sistema: ";
     while (!(cin >> n))
     {
         cin.clear();
@@ -151,6 +150,7 @@ void GaussSeidel(){
     for (int k = 0; k < max_iter; k++)
     {
         double err = 0;
+        cout << "Iteracion " << k + 1 << ":" << endl;
         for (int i = 0; i < n; i++)
         {
             double s = b[i];
@@ -164,6 +164,7 @@ void GaussSeidel(){
             double x_new = s / A[i][i];
             err += pow(x_new - x[i], 2);
             x[i] = x_new;
+            cout << "x[" << i << "] = " << x[i] << endl;
         }
         if (sqrt(err) < tol)
         {
@@ -175,6 +176,7 @@ void GaussSeidel(){
             break;
         }
     }
+
     cout << "Solucion:" << endl;
     SetConsoleTextAttribute(hConsole, 6);
     for (int i = 0; i < n; i++)
@@ -193,7 +195,7 @@ void GaussSeidel(){
         est_err += pow(s, 2);
     }
     est_err = sqrt(est_err);
-	
+
     cout << "Error de estimacion: " << est_err << endl;
 	SetConsoleTextAttribute(hConsole, 15);
 	
