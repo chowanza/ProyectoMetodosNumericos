@@ -8,6 +8,7 @@ ES REALIZAR LOS METODOS ITERATIVOS DE BISECCION Y GAUSS SEIDEL. JUNIO DE 2023*/
 #include <chrono>
 #include <thread>
 #include <cmath>
+#include <iomanip>
 #include "rlutil.h"
 #include "logoproyecto.h"
 #include <vector>
@@ -18,13 +19,14 @@ using namespace std;
 int opcio = 1;
 int opc=1;
 //funciones----------------------------------------------------------
+//animacion de cargar
 void cargando(){                                                           
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);                     
                                                                            
 	for (int i = 0; i < 100; i++) {
-        gotoxy(2, 5);
+        gotoxy(1, 5);
         cout << "Cargando: " << i << "%" << endl;
-        gotoxy(2, 6);
+        gotoxy(1, 6);
         for (int j = 0; j <= i; j++) {
             if (j < 20) {
                 cout << "\033[1;31m=";
@@ -46,7 +48,7 @@ void cargando(){
     sleep(2);
     system("cls");
 }
-
+//creacion del menu
 void completo() {
 	system("color 0F");
 	dibujarCuadro( 20,8,60,22);
@@ -63,7 +65,7 @@ void completo() {
 	Gotoxy(12,35);
 	cout<<"CARLOS MARTINEZ CI: 28.375.833";
 	Gotoxy(12,37);
-	cout<<"LUIS CANDIALES CI 28.671.144";
+	cout<<"LUIS CANDIALES CI: 28.671.144";
 	Gotoxy(44,33);
 	cout<<"PROFESORA:";
 	Gotoxy(44,35);
@@ -86,7 +88,152 @@ void showItem(const char* text, int posx,int posy,bool select) {
 	}
 	rlutil::setBackgroundColor(rlutil::COLOR::BLACK);
 }
+//imprime los puntos del metodo de biseccion
+void imprimePuntos(double (*f)(double), double a, double b, int max_iter) {
+   int puntos = max_iter + 1;
+   
+   double ancho = (b - a) / max_iter;
+   
+   cout << "\n";
+   SetConsoleTextAttribute(hConsole, 6);
+   cout << "\tx\tf(x)\n" << endl;
+   SetConsoleTextAttribute(hConsole, 15);
+   for (int i = 0; i < puntos; i++) {
+      cout << "\t" << a << "\t" << f(a) << endl;
+      a = a + ancho;
+   }
+}
+//calcula el metodo de biseccion
+double biseccion(double (*f)(double), double a, double b, double tol, int max_iter) {
+    if (f(a) * f(b) >= 0) {
+        cout << "El método de bisección puede fallar." << endl;
+        return NAN;
+    }
+    double a_n = a;
+    double b_n = b;
+    SetConsoleTextAttribute(hConsole, 6);
+    cout << setw(10) << "Iteracion" << setw(10) << "a" << setw(10) << "b" << setw(10) << "m" << setw(10) << "f(m)" << endl;
+    SetConsoleTextAttribute(hConsole, 15);
+    for (int n = 1; n < max_iter; n++) {
+        double m_n = (a_n + b_n) / 2;
+        double f_m_n = f(m_n);
+        cout << setw(10) << n << setw(10) << a_n << setw(10) << b_n << setw(10) << m_n << setw(10) << f_m_n << endl;
+        if (f(a_n) * f_m_n < 0) {
+            a_n = a_n;
+            b_n = m_n;
+        } else if (f(b_n) * f_m_n < 0) {
+            a_n = m_n;
+            b_n = b_n;
+        } else if (f_m_n == 0) {
+            cout << "Se encontro una solución exacta." << endl;
+            return m_n;
+        } else {
+            cout << "El metodo de bisección fallo." << endl;
+            return NAN;
+        }
+        if (abs(b_n - a_n) <= tol) {
+            return m_n;
+        }
+    }
+    return 0;
+}
+//invoca el procedimiento a ejecutar el metodo de biseccion
+void Biseccion() {
+	double a, b, tol;
+    int max_iter;
 
+    cout << "Ingrese el valor de a: ";
+    while (!(cin >> a)) {
+        cout << "Entrada invalida. Ingrese el valor de a: ";
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    }
+
+    cout << "Ingrese el valor de b: ";
+    while (!(cin >> b)) {
+        cout << "Entrada invalida. Ingrese el valor de b: ";
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    }
+
+    cout << "Ingrese el valor de tol: ";
+    while (!(cin >> tol)) {
+        cout << "Entrada invalida. Ingrese el valor de tol: ";
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    }
+
+    cout << "Ingrese el valor de max_iter: ";
+    while (!(cin >> max_iter)) {
+        cout << "Entrada invalida. Ingrese el valor de max_iter: ";
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    }
+
+    vector<double (*)(double)> funciones = {
+        [](double x) { return x * x - 2; },
+        [](double x) { return sin(x); },
+        [](double x) { return cos(x); },
+        [](double x) { return exp(x); },
+        [](double x) { return exp(-1 * x) - cos(3 * x) - 0.5; },
+        [](double x) { return pow(x,3) - pow(x,2) - (3 * x) - 3; },
+        [](double x) { return exp(3 * x) - 4; }
+    };
+
+    int opcion_funcion;
+
+    cout << "Elija una funcion:" << endl;
+    cout << "1. f(x) = x^2 - 2" << endl;
+    cout << "2. f(x) = sin(x)"<<endl;
+    cout<<  "3. f(x)= cos(x)"<<endl;
+    cout<<  "4. f(x)= exp(x)"<<endl;
+    cout << "5. f(x)= (1/e^x) - cos(3x) - (1/2)"<<endl;
+    cout << "6. f(x)= x^3 - x^2 - 3x - 3"<<endl;
+    cout << "7. f(x)= e^3x - 4"<<endl;
+	cout << "Ingrese una opcion--->";
+    while (!(cin >> opcion_funcion)) {
+      cout<<"Entrada invalida. Elija una funcion:"<<endl;
+      cin.clear();
+      cin.ignore(numeric_limits<streamsize>::max(),'\n');
+    }
+
+    auto f=funciones[opcion_funcion-1];
+	
+	imprimePuntos(f,a,b,max_iter);
+	
+    double raiz=biseccion(f,a,b,tol,max_iter);
+	SetConsoleTextAttribute(hConsole, 6);
+    cout<<"La raiz aproximada es:"<<raiz<<endl;
+    SetConsoleTextAttribute(hConsole, 15);
+}
+//transforma una matriz a matriz diagonalmente dominante
+bool hacer_matriz_dominante(vector<vector<double>>& matriz, vector<double>& b) {
+    int n = matriz.size();
+    for (int i = 0; i < n; i++) {
+        double max_valor = 0;
+        int max_fila = i;
+        for (int j = i; j < n; j++) {
+            double suma = 0;
+            for (int k = 0; k < n; k++) {
+                if (k != i) {
+                    suma += abs(matriz[j][k]);
+                }
+            }
+            if (abs(matriz[j][i]) > suma && abs(matriz[j][i]) > max_valor) {
+                max_valor = abs(matriz[j][i]);
+                max_fila = j;
+            }
+        }
+        if (max_valor == 0) {
+            return false;
+        }
+        swap(matriz[i], matriz[max_fila]);
+        swap(b[i], b[max_fila]);
+    }
+    return true;
+}
+
+//metodo de gauss seidel
 void GaussSeidel(){
 	
 	int n;
@@ -98,8 +245,8 @@ void GaussSeidel(){
         cout << "Entrada invalida. Intentelo de nuevo: ";
     }
 
-    double A[n][n];
-    double b[n];
+    vector<vector<double>> A(n, vector<double>(n));
+    vector<double> b(n);
     double x[n];
     int max_iter = 100;
     double tol;
@@ -112,12 +259,10 @@ void GaussSeidel(){
     }
 
     cout << "Ingrese la matriz de coeficientes:" << endl;
-    for (int i = 0; i < n; i++)
-    {
-        for (int j = 0; j < n; j++)
-        {
-            while (!(cin >> A[i][j]))
-            {
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+        	cout << "-->:";
+            while (!(cin >> A[i][j])) {
                 cin.clear();
                 cin.ignore(numeric_limits<streamsize>::max(), '\n');
                 cout << "Entrada invalida. Intentelo de nuevo: ";
@@ -126,19 +271,36 @@ void GaussSeidel(){
     }
 
     cout << "Ingrese el vector de terminos independientes:" << endl;
-    for (int i = 0; i < n; i++)
-    {
-        while (!(cin >> b[i]))
-        {
+    for (int i = 0; i < n; i++) {
+        cout << "-->:";
+        while (!(cin >> b[i])) {
             cin.clear();
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
             cout << "Entrada invalida. Intentelo de nuevo: ";
         }
     }
+    
+    if (hacer_matriz_dominante(A, b)) {
+        cout << "La matriz se hizo diagonalmente dominante:" << endl;
+        for (auto fila : A) {
+            for (auto elemento : fila) {
+                cout << elemento << " ";
+            }
+            cout << endl;
+        }
+        cout << "El vector b se ajustó en consecuencia:" << endl;
+        for (auto elemento : b) {
+            cout << elemento << " ";
+        }
+        cout << endl;
+    } else {
+        cout << "No se pudo hacer la matriz diagonalmente dominante." << endl;
+    }
 
     cout << "Ingrese el vector solucion inicial:" << endl;
     for (int i = 0; i < n; i++)
     {
+    	cout << "-->:";
         while (!(cin >> x[i]))
         {
             cin.clear();
@@ -201,6 +363,7 @@ void GaussSeidel(){
 	
 }
 
+//menu
 void menu() {
 	system("color 0F");
 	opcio = 1;
@@ -249,8 +412,9 @@ void menu() {
 		                SetConsoleTextAttribute(hConsole, 6);
 		                cout << "METODO DE BISECCION" << endl;
 		                SetConsoleTextAttribute(hConsole, 15);
-		                	system("pause");
-							opcio=0;
+		                Biseccion();
+		                system("pause");
+						opcio=0;
 						system("cls");
 		                // Code for option 1
                 		break; 
@@ -292,6 +456,8 @@ void menu() {
 
 } 
 
+
+//invoca el menu
 void returnMenu() {
 	do {
 		//completo();
